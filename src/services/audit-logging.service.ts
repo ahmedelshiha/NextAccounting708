@@ -51,18 +51,25 @@ export enum AuditSeverity {
  * Audit log entry interface
  */
 export interface AuditLogEntry {
-  actionType: AuditActionType
-  severity: AuditSeverity
-  userId: string
-  tenantId: string
-  targetUserId?: string
-  targetResourceId?: string
-  targetResourceType?: string
-  description: string
-  changes?: Record<string, any>
+  action: string
+  userId?: string
+  tenantId?: string
+  resource?: string
   metadata?: Record<string, any>
   ipAddress?: string
   userAgent?: string
+}
+
+/**
+ * Extended audit log entry with additional fields for convenience
+ */
+export interface AuditLogEntryExtended extends AuditLogEntry {
+  severity?: AuditSeverity
+  description?: string
+  targetUserId?: string
+  targetResourceId?: string
+  targetResourceType?: string
+  changes?: Record<string, any>
 }
 
 /**
@@ -70,11 +77,9 @@ export interface AuditLogEntry {
  */
 export interface AuditLogFilter {
   userId?: string
-  tenantId: string
-  actionType?: AuditActionType | AuditActionType[]
-  targetUserId?: string
-  severity?: AuditSeverity | AuditSeverity[]
-  dateRange?: {
+  tenantId?: string
+  action?: string | string[]
+  createdAt?: {
     startDate: Date
     endDate: Date
   }
@@ -89,23 +94,27 @@ export class AuditLoggingService {
   /**
    * Log an audit event
    */
-  static async logAuditEvent(entry: AuditLogEntry): Promise<void> {
+  static async logAuditEvent(entry: AuditLogEntryExtended): Promise<void> {
     try {
+      const metadata = {
+        ...entry.metadata,
+        severity: entry.severity || AuditSeverity.INFO,
+        description: entry.description,
+        targetUserId: entry.targetUserId,
+        targetResourceId: entry.targetResourceId,
+        targetResourceType: entry.targetResourceType,
+        changes: entry.changes,
+      }
+
       await prisma.auditLog.create({
         data: {
-          actionType: entry.actionType,
-          severity: entry.severity,
+          action: entry.action,
           userId: entry.userId,
           tenantId: entry.tenantId,
-          targetUserId: entry.targetUserId,
-          targetResourceId: entry.targetResourceId,
-          targetResourceType: entry.targetResourceType,
-          description: entry.description,
-          changes: entry.changes ? JSON.stringify(entry.changes) : null,
-          metadata: entry.metadata ? JSON.stringify(entry.metadata) : null,
+          resource: entry.resource,
           ipAddress: entry.ipAddress,
           userAgent: entry.userAgent,
-          timestamp: new Date(),
+          metadata,
         },
       })
     } catch (error) {
@@ -129,13 +138,16 @@ export class AuditLoggingService {
 
     if (!hasChanges) return
 
+    const action = permissionsAdded.length > 0 ? AuditActionType.PERMISSION_GRANTED : AuditActionType.PERMISSION_REVOKED
+
     await this.logAuditEvent({
-      actionType: permissionsAdded.length > 0 ? AuditActionType.PERMISSION_GRANTED : AuditActionType.PERMISSION_REVOKED,
+      action,
       severity: AuditSeverity.INFO,
       userId,
       tenantId,
       targetUserId,
       targetResourceType: 'USER_PERMISSIONS',
+      resource: `user:${targetUserId}:permissions`,
       description: `${permissionsAdded.length > 0 ? 'Granted' : 'Revoked'} ${permissionsAdded.length + permissionsRemoved.length} permission(s) for ${targetUserId}`,
       changes: {
         added: permissionsAdded,
@@ -163,12 +175,13 @@ export class AuditLoggingService {
     }
 
     await this.logAuditEvent({
-      actionType: AuditActionType.ROLE_CHANGED,
+      action: AuditActionType.ROLE_CHANGED,
       severity,
       userId,
       tenantId,
       targetUserId,
       targetResourceType: 'USER_ROLE',
+      resource: `user:${targetUserId}:role`,
       description: `Changed role for ${targetUserId} from ${fromRole} to ${toRole}${reason ? ` (${reason})` : ''}`,
       changes: {
         fromRole,
@@ -188,12 +201,13 @@ export class AuditLoggingService {
     changes: Record<string, any>
   ): Promise<void> {
     await this.logAuditEvent({
-      actionType: AuditActionType.SETTING_CHANGED,
+      action: AuditActionType.SETTING_CHANGED,
       severity: AuditSeverity.INFO,
       userId,
       tenantId,
       targetResourceId: section,
       targetResourceType: 'SETTINGS',
+      resource: `settings:${section}`,
       description: `Updated ${section} settings`,
       changes,
     })
@@ -210,7 +224,7 @@ export class AuditLoggingService {
     status: 'STARTED' | 'COMPLETED' | 'FAILED',
     metadata?: Record<string, any>
   ): Promise<void> {
-    const actionType =
+    const action =
       status === 'STARTED' ? AuditActionType.BULK_OPERATION_STARTED :
       status === 'COMPLETED' ? AuditActionType.BULK_OPERATION_COMPLETED :
       AuditActionType.BULK_OPERATION_FAILED
@@ -220,11 +234,12 @@ export class AuditLoggingService {
       AuditSeverity.INFO
 
     await this.logAuditEvent({
-      actionType,
+      action,
       severity,
       userId,
       tenantId,
       targetResourceType: 'BULK_OPERATION',
+      resource: `bulk-operation:${operationType}`,
       description: `${status} bulk operation: ${operationType} affecting ${affectedUserCount} user(s)`,
       metadata: {
         operationType,
@@ -238,48 +253,39 @@ export class AuditLoggingService {
    * Query audit logs
    */
   static async queryAuditLogs(filter: AuditLogFilter): Promise<any[]> {
-    const where: any = {
-      tenantId: filter.tenantId,
-    }
+    const where: any = {}
 
     if (filter.userId) {
       where.userId = filter.userId
     }
 
-    if (filter.actionType) {
-      where.actionType = Array.isArray(filter.actionType)
-        ? { in: filter.actionType }
-        : filter.actionType
+    if (filter.tenantId) {
+      where.tenantId = filter.tenantId
     }
 
-    if (filter.targetUserId) {
-      where.targetUserId = filter.targetUserId
+    if (filter.action) {
+      where.action = Array.isArray(filter.action)
+        ? { in: filter.action }
+        : filter.action
     }
 
-    if (filter.severity) {
-      where.severity = Array.isArray(filter.severity)
-        ? { in: filter.severity }
-        : filter.severity
-    }
-
-    if (filter.dateRange) {
-      where.timestamp = {
-        gte: filter.dateRange.startDate,
-        lte: filter.dateRange.endDate,
+    if (filter.createdAt) {
+      where.createdAt = {
+        gte: filter.createdAt.startDate,
+        lte: filter.createdAt.endDate,
       }
     }
 
     const logs = await prisma.auditLog.findMany({
       where,
-      orderBy: { timestamp: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: filter.limit || 100,
       skip: filter.offset || 0,
     })
 
     return logs.map(log => ({
       ...log,
-      changes: log.changes ? JSON.parse(log.changes) : null,
-      metadata: log.metadata ? JSON.parse(log.metadata) : null,
+      metadata: typeof log.metadata === 'object' ? log.metadata : null,
     }))
   }
 
@@ -293,21 +299,21 @@ export class AuditLoggingService {
     const where: any = { tenantId }
 
     if (dateRange) {
-      where.timestamp = {
+      where.createdAt = {
         gte: dateRange.startDate,
         lte: dateRange.endDate,
       }
     }
 
-    const actionTypeCounts = await prisma.auditLog.groupBy({
-      by: ['actionType'],
+    const actionCounts = await prisma.auditLog.groupBy({
+      by: ['action'],
       where,
       _count: true,
     })
 
     const stats: Record<string, number> = {}
-    actionTypeCounts.forEach(({ actionType, _count }) => {
-      stats[actionType] = _count
+    actionCounts.forEach(({ action, _count }) => {
+      stats[action] = _count
     })
 
     return stats
@@ -326,7 +332,7 @@ export class AuditLoggingService {
     const result = await prisma.auditLog.deleteMany({
       where: {
         tenantId,
-        timestamp: {
+        createdAt: {
           lt: cutoffDate,
         },
       },
@@ -351,23 +357,17 @@ export class AuditLoggingService {
     // Convert to CSV
     const headers = [
       'Timestamp',
-      'Action Type',
-      'Severity',
+      'Action',
       'User ID',
-      'Target User ID',
-      'Resource Type',
-      'Description',
+      'Resource',
       'IP Address',
     ]
 
     const rows = logs.map(log => [
-      log.timestamp.toISOString(),
-      log.actionType,
-      log.severity,
-      log.userId,
-      log.targetUserId || '',
-      log.targetResourceType || '',
-      log.description,
+      log.createdAt.toISOString(),
+      log.action,
+      log.userId || '',
+      log.resource || '',
       log.ipAddress || '',
     ])
 

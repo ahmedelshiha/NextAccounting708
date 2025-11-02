@@ -188,10 +188,10 @@ export const RoleFormModal = React.forwardRef<HTMLDivElement, RoleFormModalProps
           const data = await response.json()
           setPermissions(Array.isArray(data) ? data : data.permissions || [])
           // Initialize expanded categories with first 3
-          const categories = Array.isArray(data) 
+          const categories = Array.isArray(data)
             ? [...new Set((data as Permission[]).map(p => p.category))]
             : (data.permissions ? [...new Set(data.permissions.map((p: Permission) => p.category))] : [])
-          setExpandedCategories(new Set(categories.slice(0, 3)))
+          setExpandedCategories(new Set<string>(categories.slice(0, 3) as string[]))
         } catch (err) {
           console.error('Failed to load permissions:', err)
           setPermissions([

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import prisma from '@/lib/prisma'
 import { withAdminAuth, AuthenticatedRequest } from '@/lib/auth-middleware'
 import { UserManagementSettings } from '@/app/admin/settings/user-management/types'
 
