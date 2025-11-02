@@ -47,7 +47,7 @@ export function withAdminAuth(
       // Get session
       const session = await getServerSession(authOptions)
 
-      if (!session?.user?.email) {
+      if (!session?.user?.id) {
         return NextResponse.json(
           { error: 'Unauthorized: No session found' },
           { status: 401 }
@@ -56,7 +56,7 @@ export function withAdminAuth(
 
       // Get user from database
       const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { id: session.user.id },
         select: {
           id: true,
           tenantId: true,
@@ -119,7 +119,7 @@ export function withPermissionAuth(
       // Get session
       const session = await getServerSession(authOptions)
 
-      if (!session?.user?.email) {
+      if (!session?.user?.id) {
         return NextResponse.json(
           { error: 'Unauthorized: No session found' },
           { status: 401 }
@@ -128,7 +128,7 @@ export function withPermissionAuth(
 
       // Get user from database with permissions
       const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { id: session.user.id },
         select: {
           id: true,
           tenantId: true,
@@ -203,7 +203,7 @@ export function withTenantAuth(
       // Get session
       const session = await getServerSession(authOptions)
 
-      if (!session?.user?.email) {
+      if (!session?.user?.id) {
         return NextResponse.json(
           { error: 'Unauthorized: No session found' },
           { status: 401 }
@@ -225,7 +225,7 @@ export function withTenantAuth(
 
       // Get user from database
       const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { id: session.user.id },
         select: {
           id: true,
           tenantId: true,
@@ -293,9 +293,9 @@ export function withPublicAuth(handler: MiddlewareHandler) {
       // Try to get session, but don't fail if not found
       const session = await getServerSession(authOptions)
 
-      if (session?.user?.email) {
+      if (session?.user?.id) {
         const user = await prisma.user.findUnique({
-          where: { email: session.user.email },
+          where: { id: session.user.id },
           select: {
             id: true,
             tenantId: true,

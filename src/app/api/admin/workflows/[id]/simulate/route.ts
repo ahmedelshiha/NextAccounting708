@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma'
 import { withAdminAuth, AuthenticatedRequest } from '@/lib/auth-middleware'
 import { workflowDesignerService, type Workflow } from '@/services/workflow-designer.service'
 
+export const dynamic = 'force-dynamic'
+
 export const POST = withAdminAuth(async (req: AuthenticatedRequest, context: any) => {
   try {
     const { id } = context?.params || {}
