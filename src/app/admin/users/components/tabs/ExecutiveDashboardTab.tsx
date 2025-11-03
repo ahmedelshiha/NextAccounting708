@@ -59,8 +59,28 @@ export function ExecutiveDashboardTab({
   const { data: analyticsData, isLoading: analyticsLoading } = useDashboardAnalytics()
   const [dashboardView, setDashboardView] = useState<'overview' | 'operations'>('overview')
 
-  // Operations section state (merged from DashboardTab)
-  const [filters, setFilters] = useState<UserFilters>({
+  // Server-side filtering and pagination
+  const {
+    data: filterData,
+    loading: filterLoading,
+    error: filterError,
+    filters: activeFilters,
+    setFilters,
+    setPage,
+    refetch,
+    hasNextPage,
+    hasPreviousPage,
+    currentPage,
+    totalPages,
+    totalCount
+  } = useServerSideFiltering({
+    limit: 50,
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  })
+
+  // Legacy filter state for UI
+  const [filters, setFiltersUI] = useState<UserFilters>({
     search: '',
     role: undefined,
     status: undefined,
@@ -73,16 +93,23 @@ export function ExecutiveDashboardTab({
   const [isApplyingBulkAction, setIsApplyingBulkAction] = useState(false)
 
   const handleRefreshDashboard = () => {
+    refetch()
     onRefresh?.()
   }
 
-  // Filter users based on active filters
-  const filteredUsers = useFilterUsers(users, {
-    search: filters.search,
-    role: filters.role,
-    status: filters.status,
-    department: filters.department
-  })
+  // Handle filter changes - update both UI state and server filters
+  const handleFilterChange = useCallback((newFilters: UserFilters) => {
+    setFiltersUI(newFilters)
+    setFilters({
+      search: newFilters.search || undefined,
+      role: newFilters.role || undefined,
+      status: newFilters.status || undefined,
+      department: newFilters.department || undefined
+    })
+  }, [setFilters])
+
+  // Get users from server-side filtering or fallback
+  const filteredUsers = filterData?.users || users
 
   const displayMetrics: OperationsMetrics = stats || {
     totalUsers: users.length,
