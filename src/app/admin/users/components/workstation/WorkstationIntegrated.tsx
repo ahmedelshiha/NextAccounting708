@@ -243,14 +243,7 @@ export function WorkstationIntegrated({
         main={mainContent}
         insights={insightsContent}
       />
-
-      {selectedUser && (
-        <UserProfileDialog
-          user={selectedUser}
-          open={isUserDialogOpen}
-          onOpenChange={setIsUserDialogOpen}
-        />
-      )}
+      <UserProfileDialog />
     </>
   )
 }
