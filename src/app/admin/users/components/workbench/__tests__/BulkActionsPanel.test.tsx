@@ -183,9 +183,7 @@ describe('BulkActionsPanel', () => {
         )
       })
 
-      await waitFor(() => {
-        expect(screen.queryByTestId('dry-run-modal')).not.toBeInTheDocument()
-      })
+      expect(mockOnClear).toHaveBeenCalledOnce()
     })
 
     it('should handle action type selection', async () => {
@@ -201,8 +199,8 @@ describe('BulkActionsPanel', () => {
       const selectors = screen.getAllByRole('combobox')
       expect(selectors[0]).toBeInTheDocument()
 
-      await user.click(selectors[0])
-      // Would select an option if available
+      await user.selectOptions(selectors[0], 'set-role')
+      expect((selectors[0] as HTMLSelectElement).value).toBe('set-role')
     })
   })
 
