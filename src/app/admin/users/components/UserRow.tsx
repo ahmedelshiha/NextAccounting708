@@ -60,25 +60,25 @@ const UserRow = memo(function UserRow({
 
   const getRoleColor = (role: string) => {
     const colors: Record<string, string> = {
-      ADMIN: 'bg-red-100 text-red-800',
-      EDITOR: 'bg-blue-100 text-blue-800',
-      VIEWER: 'bg-green-100 text-green-800',
-      TEAM_LEAD: 'bg-purple-100 text-purple-800',
-      TEAM_MEMBER: 'bg-blue-100 text-blue-800',
-      STAFF: 'bg-cyan-100 text-cyan-800',
-      CLIENT: 'bg-emerald-100 text-emerald-800'
+      ADMIN: 'bg-red-50 text-red-700 border border-red-100',
+      EDITOR: 'bg-blue-50 text-blue-700 border border-blue-100',
+      VIEWER: 'bg-emerald-50 text-emerald-700 border border-emerald-100',
+      TEAM_LEAD: 'bg-purple-50 text-purple-700 border border-purple-100',
+      TEAM_MEMBER: 'bg-sky-50 text-sky-700 border border-sky-100',
+      STAFF: 'bg-cyan-50 text-cyan-700 border border-cyan-100',
+      CLIENT: 'bg-emerald-50 text-emerald-700 border border-emerald-100'
     }
-    return colors[role] || 'bg-gray-100 text-gray-800'
+    return colors[role] || 'bg-gray-50 text-gray-800 border border-gray-100'
   }
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      ACTIVE: 'bg-green-100 text-green-800 border border-green-600',
-      INACTIVE: 'bg-red-100 text-red-800 border border-red-600',
-      SUSPENDED: 'bg-red-100 text-red-800 border border-red-600',
-      PENDING: 'bg-yellow-100 text-yellow-800 border border-yellow-600'
+      ACTIVE: 'bg-green-50 text-green-700 border border-green-200',
+      INACTIVE: 'bg-red-50 text-red-700 border border-red-200',
+      SUSPENDED: 'bg-red-50 text-red-700 border border-red-200',
+      PENDING: 'bg-yellow-50 text-yellow-700 border border-yellow-200'
     }
-    return colors[status] || 'bg-gray-100 text-gray-800 border border-gray-300'
+    return colors[status] || 'bg-gray-50 text-gray-800 border border-gray-100'
   }
 
   return (
