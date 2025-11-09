@@ -60,12 +60,20 @@ export function VirtualScroller<T>({
     // Initial measurement
     measureHeight()
 
+    // Fallback measurement after a short delay to catch late renders
+    const timeoutId = setTimeout(measureHeight, 100)
+
     // Use ResizeObserver to track container size changes
     const resizeObserver = new ResizeObserver(measureHeight)
     resizeObserver.observe(container)
 
+    // Also measure on window resize
+    window.addEventListener('resize', measureHeight)
+
     return () => {
+      clearTimeout(timeoutId)
       resizeObserver.disconnect()
+      window.removeEventListener('resize', measureHeight)
     }
   }, [])
 
