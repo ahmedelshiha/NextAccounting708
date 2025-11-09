@@ -148,8 +148,8 @@ Implement a minimal, Excel-style filter bar above the User Directory table that 
 │            ↓                             │
 │  ┌─────────────────────────────────┐   │
 │  │ FilterState Hook (useFilterState)   │
-│  │  ├─ search: string              ��   │
-│  │  ├─ role: string | null         │   │
+│  │  ├─ search: string              │   │
+│  │  ���─ role: string | null         │   │
 │  │  ├─ status: string | null       │   │
 │  │  └─ filteredUsers: UserItem[]   │   │
 │  └─────────────────────────────────┘   │
@@ -1305,13 +1305,39 @@ Phase 3 (Advanced - Future)
 
 ## 🚀 Implementation Timeline
 
+### MVP (Phase 1-4): Essential Features
 | Phase | Duration | Effort | Status |
 |-------|----------|--------|--------|
 | Phase 1: Setup | 1.5 hours | 1h 15m | Ready |
 | Phase 2: Development | 2.5 hours | 2h 30m | Ready |
 | Phase 3: Backend | 45 minutes | Ready |
 | Phase 4: Testing | 1.5 hours | Ready |
-| **TOTAL** | **6 hours** | | **Ready to Start** |
+| **MVP TOTAL** | **6 hours** | **Ready to Start** | ✅ |
+
+### Enterprise Enhancements (Phase 2+): Recommended
+| Feature | Duration | Effort | Priority |
+|---------|----------|--------|----------|
+| Multi-select Filters | 1 hour | Medium | 🔴 High |
+| Advanced Operators | 1.5 hours | Medium | 🔴 High |
+| Filter Pills | 45 min | Low | 🟡 Medium |
+| Bulk Actions Panel | 1 hour | Medium | 🟡 Medium |
+| Export Options | 1.5 hours | Medium | 🟡 Medium |
+| Column Management | 1 hour | Medium | 🟡 Medium |
+| **ENTERPRISE TOTAL** | **7 hours** | | ⏳ Optional |
+
+### Advanced Features (Phase 3): Future
+| Feature | Duration | Effort | Priority |
+|---------|----------|--------|----------|
+| Filter History | 1.5 hours | Medium | 🟢 Low |
+| Save Presets | 1.5 hours | Medium | 🟢 Low |
+| Query Builder | 3 hours | High | 🟢 Low |
+| Autocomplete | 1.5 hours | Medium | 🟢 Low |
+| **ADVANCED TOTAL** | **8 hours** | | 🔮 Future |
+
+**Recommended Path:**
+- ✅ MVP Phase (6 hours) - Ship baseline filter functionality
+- ➕ Enterprise Phase (7 hours) - Add professional features
+- 🔮 Advanced Phase (8 hours) - Power user features
 
 ---
 
