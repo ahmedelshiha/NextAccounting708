@@ -74,8 +74,8 @@ export const PermissionsTab = memo(function PermissionsTab({ user }: Permissions
   )
 
   const handleReset = useCallback(() => {
-    setSelectedRole(user.role || 'VIEWER')
-    setSelectedPermissions(user.permissions || [])
+    setSelectedRole((user.role as 'ADMIN' | 'CLIENT' | 'TEAM_MEMBER' | 'TEAM_LEAD' | 'STAFF' | 'VIEWER') || 'VIEWER')
+    setSelectedPermissions((user.permissions as Permission[]) || [])
     setError(null)
   }, [user])
 
