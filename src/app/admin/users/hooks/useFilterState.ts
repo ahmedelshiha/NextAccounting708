@@ -71,9 +71,9 @@ export function useFilterState(users: UserItem[]) {
   }, [users, filters])
 
   const hasActiveFilters = !!(
-    filters.search || 
-    filters.role || 
-    filters.status
+    filters.search ||
+    filters.roles.length > 0 ||
+    filters.statuses.length > 0
   )
 
   const clearFilters = useCallback(() => {
