@@ -158,7 +158,7 @@ export default function ProfessionalKPIGrid({ stats }: KPIStatsProps) {
                     </Button>
                   </div>
                 </div>
-                <CardTitle className="text-sm font-medium text-gray-600">{kpi.title}</CardTitle>
+                <CardTitle className="text-xs font-medium text-gray-600">{kpi.title}</CardTitle>
               </CardHeader>
 
               <CardContent className="pt-0">
