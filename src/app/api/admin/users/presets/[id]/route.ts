@@ -59,10 +59,10 @@ export const GET = withTenantContext(async (request: NextRequest, props: { param
       return respond.notFound('Preset not found')
     }
 
-    return respond.success(preset)
+    return respond.ok(preset)
   } catch (error) {
     console.error('[Presets GET] Error:', error)
-    return respond.internalError('Failed to fetch preset')
+    return respond.serverError('Failed to fetch preset')
   }
 })
 
@@ -233,9 +233,9 @@ export const DELETE = withTenantContext(async (request: NextRequest, props: { pa
       where: { id }
     })
 
-    return respond.success({ message: 'Preset deleted successfully', id })
+    return respond.ok({ message: 'Preset deleted successfully', id })
   } catch (error) {
     console.error('[Presets DELETE] Error:', error)
-    return respond.internalError('Failed to delete preset')
+    return respond.serverError('Failed to delete preset')
   }
 })
