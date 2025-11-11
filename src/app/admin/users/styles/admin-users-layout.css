@@ -29,7 +29,7 @@
 }
 
 /* Desktop: When sidebar is closed via internal button, collapse to minimal width */
-.admin-workbench-main:has([data-collapsed="true"]) {
+.admin-workbench-main:has(.admin-workbench-sidebar:has([data-collapsed="true"])) {
   grid-template-columns: 64px 1fr;
 }
 
