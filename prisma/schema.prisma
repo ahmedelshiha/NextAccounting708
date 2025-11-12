@@ -1205,6 +1205,63 @@ model UserPaymentMethod {
   @@map("user_payment_methods")
 }
 
+model BankingConnection {
+  id                String    @id @default(cuid())
+  tenantId          String
+  entityId          String?   // Entity this account is linked to
+  provider          String    // 'plaid', 'uae', 'ksa', 'csv'
+  accountNumber     String
+  bankName          String
+  accountType       String    // 'checking', 'savings', 'business'
+  status            String    @default("ACTIVE") // 'ACTIVE', 'INACTIVE', 'ERROR'
+  lastSyncAt        DateTime?
+  lastSyncError     String?
+  sessionToken      String?   // Encrypted session token from provider
+  syncFrequency     String    @default("DAILY") // 'DAILY', 'WEEKLY', 'MONTHLY', 'MANUAL'
+  credentials       Json?     // Encrypted credentials for CSV/manual
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  tenant            Tenant    @relation("BankingConnections", fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions      BankingTransaction[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([lastSyncAt])
+  @@map("banking_connections")
+}
+
+model BankingTransaction {
+  id                String    @id @default(cuid())
+  connectionId      String
+  tenantId          String
+  externalId        String?   // ID from bank
+  date              DateTime
+  description       String
+  amount            Decimal   @db.Decimal(19, 4)
+  currency          String    @default("AED")
+  type              String    // 'debit', 'credit'
+  balance           Decimal?  @db.Decimal(19, 4)
+  reference         String?
+  tags              String[]
+  matched           Boolean   @default(false) // Matched to invoice/expense
+  matchedToId       String?   // ID of matched invoice/expense
+  matchedToType     String?   // 'invoice', 'expense', 'bill'
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  connection        BankingConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  tenant            Tenant    @relation("BankingTransactions", fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, externalId])
+  @@index([tenantId])
+  @@index([connectionId])
+  @@index([date])
+  @@index([matched])
+  @@map("banking_transactions")
+}
+
 model Invoice {
   id         String        @id @default(cuid())
   tenantId   String
