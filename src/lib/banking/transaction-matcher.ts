@@ -101,7 +101,7 @@ export async function matchTransactionsToInvoices(
         // Only match credit transactions (incoming payments)
         if (txn.type !== 'credit') continue
 
-        const txnAmount = new Decimal(txn.amount)
+        const txnAmount = Number(txn.amount)
         const txnDate = new Date(txn.date)
 
         // Find matching invoices
@@ -132,12 +132,12 @@ export async function matchTransactionsToInvoices(
           let score = 0
 
           // Amount match (primary criteria)
-          const invoiceAmount = new Decimal(invoice.totalAmount)
-          const amountDiff = txnAmount.sub(invoiceAmount).abs()
+          const invoiceAmount = Number(invoice.totalAmount)
+          const amountDiff = Math.abs(txnAmount - invoiceAmount)
 
-          if (amountDiff.lte(new Decimal(criteria.amountTolerance))) {
+          if (amountDiff <= criteria.amountTolerance) {
             score += 0.5 // Amount matches exactly
-          } else if (amountDiff.lte(new Decimal(criteria.amountTolerance * 2))) {
+          } else if (amountDiff <= criteria.amountTolerance * 2) {
             score += 0.25 // Close match
           }
 
