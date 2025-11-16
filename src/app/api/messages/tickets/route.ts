@@ -8,23 +8,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { withTenantContext } from "@/lib/api-wrapper";
 import { requireTenantContext } from "@/lib/tenant-utils";
 import { TicketsService } from "@/lib/services/messages/tickets-service";
+import { TicketCategory, TicketPriority } from "@/types/messages";
 import { z } from "zod";
 
 const createTicketSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().max(5000),
-  category: z.enum([
-    "GENERAL",
-    "TECHNICAL",
-    "BILLING",
-    "ACCOUNT",
-    "FEATURE_REQUEST",
-    "BUG_REPORT",
-    "COMPLIANCE",
-    "TAX",
-    "OTHER",
-  ]),
-  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT", "CRITICAL"]),
+  category: z.nativeEnum(TicketCategory),
+  priority: z.nativeEnum(TicketPriority),
   tags: z.array(z.string()).optional(),
   attachments: z.array(z.string()).optional(),
 });
