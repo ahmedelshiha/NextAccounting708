@@ -5,13 +5,16 @@
 
 import prisma from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+import {
+  BillStatus,
+  OcrStatus,
+} from "@/types/bills";
 import type {
   Bill,
   BillCreateInput,
   BillUpdateInput,
   BillFilters,
   BillStats,
-  BillStatus,
 } from "@/types/bills";
 
 export class BillsService {
@@ -167,8 +170,8 @@ export class BillsService {
         notes: data.notes,
         tags: data.tags || [],
         attachmentId: data.attachmentId,
-        status: "PENDING",
-        ocrStatus: "PENDING",
+        status: BillStatus.PENDING,
+        ocrStatus: OcrStatus.PENDING,
       },
       include: {
         attachment: {
@@ -393,13 +396,13 @@ export class BillsService {
     bills.forEach((bill) => {
       stats.totalAmount += bill.amount;
 
-      if (bill.status === "PENDING") {
+      if (bill.status === BillStatus.PENDING) {
         stats.pending++;
         stats.pendingAmount += bill.amount;
-      } else if (bill.status === "APPROVED") {
+      } else if (bill.status === BillStatus.APPROVED) {
         stats.approved++;
         stats.approvedAmount += bill.amount;
-      } else if (bill.status === "PAID") {
+      } else if (bill.status === BillStatus.PAID) {
         stats.paid++;
         stats.paidAmount += bill.amount;
       }
